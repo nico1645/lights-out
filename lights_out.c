@@ -147,7 +147,7 @@ void set_cross(struct field *field, int i, int j) {
 }
 
 void print_field(struct field *field) {
-  for (unsigned int i = 0; i < field->size; i++) {
+  for (unsigned int i = 0; i < (unsigned int) field->size; i++) {
     printf("%d ", field->field[i].x);
     if ((i + 1) % field->width == 0)
       printf("\n");
