@@ -75,10 +75,11 @@ void game_loop(struct field *field, int *ticks, int *sol) {
         break;
       }
       if (creating) {
-        set_field(field, i - 1, j-1);
+        set_field(field, i - 1, j - 1);
       } else {
-        set_cross(field, i-1, j-1);
-        sol[field->width * (i-1) + j - 1] = (sol[field->width * (i-1) + j - 1] + 1) % 2;
+        set_cross(field, i - 1, j - 1);
+        sol[field->width * (i - 1) + j - 1] =
+            (sol[field->width * (i - 1) + j - 1] + 1) % 2;
       }
       print_field(field);
       break;
@@ -117,6 +118,7 @@ void game_loop(struct field *field, int *ticks, int *sol) {
 }
 
 int solve_field(struct field *field, int *sol) {
+  // Creating the augmented matrix for solving the system
   int matrix[field->size][field->size + 1];
   memset(matrix, 0, sizeof(int) * field->size * (field->size + 1));
   int x;
@@ -145,8 +147,9 @@ int solve_field(struct field *field, int *sol) {
     }
   }
 
+  // Gauss-Jordan elimination to obtain the reduced row echolon form (rref)
+  // and a particular solution to the system
   int n = field->size;
-  int rank = -1;
   for (int k = 0; k < n; k++) {
     for (int i = k + 1; i < n; i++) {
       if (matrix[k][k] == 1)
@@ -171,29 +174,26 @@ int solve_field(struct field *field, int *sol) {
     }
   }
 
+  // Check if a solution exist and what rank the matrix has
+  int rank = -1;
   for (int i = 0; i < n; i++) {
     if (matrix[i][i] == 0 && rank == -1)
       rank = i;
-    if (matrix[i][i] == 0 && matrix[i][i] != matrix[i][field->size])
+    if (matrix[i][i] == 0 && matrix[i][i] != matrix[i][n])
       return 0;
-    sol[i] = matrix[i][field->size];
+    sol[i] = matrix[i][n];
   }
   if (rank == -1)
     return 1;
 
-  int nullspace[n][n - rank];
-  for (int j = 0; j < n - rank; j++) {
-    for (int i = n - 1; i >= n - rank; i--) {
-      if (i == n - j - 1)
-        nullspace[i][j] = 1;
-      else
-        nullspace[i][j] = 0;
-    }
-    for (int i = rank - 1; i >= 0; i--) {
-      nullspace[i][j] = matrix[i][n - j - 1];
-    }
+  // Making the last n - rank column vectors of the matrix a basis for the
+  // nullspace
+  for (int i = rank; i < n; i++) {
+    matrix[i][i] = 1;
   }
 
+  // Checking all possible solution and find the one with
+  // the least amount of lights flipping necessary
   int tmp[n];
   int min_ones = n + 1;
   for (int b = 0; b < pow(2, n - rank); b++) {
@@ -202,7 +202,7 @@ int solve_field(struct field *field, int *sol) {
     for (int j = 0; j < n - rank; j++) {
       if ((b >> j) & 1) {
         for (int i = 0; i < n; i++) {
-          tmp[i] ^= nullspace[i][j];
+          tmp[i] ^= matrix[i][rank + j];
         }
       }
     }
