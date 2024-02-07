@@ -11,7 +11,7 @@ BIN_TARGET = $(BIN_DIR)/lights_out
 all: build
 
 build: 
-	mkdir $(BIN_DIR)
+	mkdir -p $(BIN_DIR)
 	$(CC) $(CFLAGS) $(SRC_FILE) -o $(BIN_TARGET)	
 
 test:
