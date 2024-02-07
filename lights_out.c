@@ -5,6 +5,7 @@
  * with linear algebra - Marlow Anderson and Todd Feil)
  */
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -70,14 +71,14 @@ void game_loop(struct field *field, int *ticks, int *sol) {
       break;
     case 'i':
       scanf("%d %d", &i, &j);
-      if (!(i < field->width && j < field->width) || (i < 0 && j < 0)) {
+      if (!(i <= field->width && j <= field->width) || (i < 1 && j < 1)) {
         break;
       }
       if (creating) {
-        set_field(field, i, j);
+        set_field(field, i - 1, j-1);
       } else {
-        set_cross(field, i, j);
-        sol[field->width * i + j] = (sol[field->width * i + j] + 1) % 2;
+        set_cross(field, i-1, j-1);
+        sol[field->width * (i-1) + j - 1] = (sol[field->width * (i-1) + j - 1] + 1) % 2;
       }
       print_field(field);
       break;
@@ -145,6 +146,7 @@ int solve_field(struct field *field, int *sol) {
   }
 
   int n = field->size;
+  int rank = -1;
   for (int k = 0; k < n; k++) {
     for (int i = k + 1; i < n; i++) {
       if (matrix[k][k] == 1)
@@ -163,15 +165,58 @@ int solve_field(struct field *field, int *sol) {
     for (int i = 0; i < n; i++) {
       if (k != i && matrix[i][k] == 1) {
         for (int j = k; j <= n; j++) {
-          matrix[i][j] = matrix[i][j] ^ (matrix[k][j]);
+          matrix[i][j] ^= matrix[k][j];
         }
       }
     }
   }
 
-  for (int i = 0; i < field->size; i++) {
-    if (matrix[i][i] == 0 && matrix[i][i] != matrix[i][field->size]) return 0;
+  for (int i = 0; i < n; i++) {
+    if (matrix[i][i] == 0 && rank == -1)
+      rank = i;
+    if (matrix[i][i] == 0 && matrix[i][i] != matrix[i][field->size])
+      return 0;
     sol[i] = matrix[i][field->size];
+  }
+  if (rank == -1)
+    return 1;
+
+  int nullspace[n][n - rank];
+  for (int j = 0; j < n - rank; j++) {
+    for (int i = n - 1; i >= n - rank; i--) {
+      if (i == n - j - 1)
+        nullspace[i][j] = 1;
+      else
+        nullspace[i][j] = 0;
+    }
+    for (int i = rank - 1; i >= 0; i--) {
+      nullspace[i][j] = matrix[i][n - j - 1];
+    }
+  }
+
+  int tmp[n];
+  int min_ones = n + 1;
+  for (int b = 0; b < pow(2, n - rank); b++) {
+    for (int i = 0; i < n; i++)
+      tmp[i] = matrix[i][n];
+    for (int j = 0; j < n - rank; j++) {
+      if ((b >> j) & 1) {
+        for (int i = 0; i < n; i++) {
+          tmp[i] ^= nullspace[i][j];
+        }
+      }
+    }
+    int ones = 0;
+    for (int i = 0; i < n; i++) {
+      if (tmp[i] == 1)
+        ones++;
+    }
+    if (ones < min_ones) {
+      min_ones = ones;
+      for (int i = 0; i < n; i++) {
+        sol[i] = tmp[i];
+      }
+    }
   }
 
   return 1;
@@ -180,7 +225,7 @@ int solve_field(struct field *field, int *sol) {
 void print_sol(struct field *field, int *sol) {
   for (int i = 0; i < field->size; i++) {
     if (sol[i] == 1) {
-      printf("(%d %d) ", i / field->width, i % field->width);
+      printf("(%d %d) ", i / field->width + 1, i % field->width + 1);
     }
   }
   printf("\n");
