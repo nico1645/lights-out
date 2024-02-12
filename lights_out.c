@@ -282,10 +282,25 @@ void set_cross(struct field *field, int i, int j) {
 }
 
 void print_field(struct field *field) {
+  for (unsigned int j = 0; j < (unsigned int)field->width * 4 + 1; j++) {
+    if (j % 4 == 0)
+      printf("+");
+    else
+      printf("-");
+  }
+  printf("\n");
   for (unsigned int i = 0; i < (unsigned int)field->size; i++) {
-    printf("%d ", field->field[i].x);
-    if ((i + 1) % field->width == 0)
+    printf("| %d ", field->field[i].x);
+    if ((i + 1) % field->width == 0) {
+      printf("|\n");
+      for (unsigned int j = 0; j < (unsigned int)field->width * 4 + 1; j++) {
+        if (j % 4 == 0)
+          printf("+");
+        else
+          printf("-");
+      }
       printf("\n");
+    }
   }
   printf("\n");
 }
