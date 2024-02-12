@@ -5,6 +5,12 @@ The game consists of a 5 x 5 grid with values 1 (0) representing lights on (off)
 # Linear Algebra connection
 The grid can be represented as a single vector **b** constisting of 25 values either 1 or 0 representing lights on or off. There are exactly 25 different lights that can be flipped (respecting the rules of turning lights on or off). Each such light flipping can be represented by a vector of 25 values with exactly 4 ones in the correct locations and zeros otherwise. If a solution to the problem exist there must exist a unique way to pick some of the 25 vectors adding them up modulo 2 that gives us the vector **b**.
 This is basically just solving a linear system of equation where the matrix **A** is 25 x 25 with the 25 different lights vectors as column, and we want to solve for **Ax = b** where **x** is the vector that tells us which of the columns from **A** one has to pick to get **b**. In other terms which lights one has to turn flip in order to get the initial grid. There is a small caveat that is we are not in the vector field over the real numbers but instead we are in the binary vector field where the arithmetic operation are the corresponding binary operation. But solving such a linear system of equation can be done through Gaussian Elimination isomorph to how we do it over the standard vector field.
+# Usage
+To compile it from source just run make. Then run lights_out by default the grid is 5 x 5 and a initial random grid is created with 7 random clicks. The width and the number of clicks can be adjusted by a positive integer.
+> lights_out [width] [clicks]
+
+One can switch a light by entering **i x y** where i stands for insert in the x-th row and y-th column. The optimal solution for solving the grid can be viewed when entering **s** and one can create a new random starting grid by entering **r**. To quit the game just enter **q**. If you would like to create a new game from scratch enter **c** then **i x y** will switch a single light on, if your are done enter **d**. Afterwards the grid you can try to solve the grid or take a look at the solution as explained above. Remember there might not exist a solution depending on the size of the grid.
+
 # Todo
 - Seperating the code
 - Different frontend
